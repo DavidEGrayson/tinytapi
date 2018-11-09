@@ -1,0 +1,21 @@
+# Handy command to look at first few bytes of all the TBD files.
+find sdk/ -iname 'lib*.tbd' -exec od --format=x1 --read-bytes=16 {} ';' | sort | uniq
+
+LinkerInterfaceFile::create
+  loadFile(input, [ReadFlags::Symbols])
+
+readFile(input, readFlags) -> InterfaceFile
+  Registy.readFile(input, readFlags, ArchitectureSet::All())
+    identify_magic(data)
+
+TextStub_v1.cpp, canRead:
+  - must start with: "---" or "--- !tapi-tbd-v1"
+  - must end with:   ...
+
+TextStub_v2.cpp, canRead:
+  - must start with: --- !tapi-tbd-v2
+  - must end with:   ...
+
+TextStub_v3.cpp, canRead:
+  - must start with: --- !tapi-tbd-v3
+  - must end with:   ...
