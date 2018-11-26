@@ -64,6 +64,8 @@ static void dump(const std::string & filename) {
     exit(1);
   }
 
+  std::cout << "install-name: " << file->getInstallName() << std::endl;
+
   delete file;
 }
 

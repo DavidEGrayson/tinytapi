@@ -59,6 +59,9 @@ public:
 
 class LinkerInterfaceFile {
   LinkerInterfaceFile() = default;
+
+  std::string installName;
+
 public:
   /** Let's hope we don't need any of these:
   LinkerInterfaceFile(const LinkerInterfaceFile &) noexcept = delete;
@@ -85,7 +88,10 @@ public:
   static bool areEquivalent(const std::string & tbdPath,
     const std::string & dylibPath) noexcept;
 
-  const std::string & getInstallName() const noexcept;
+  const std::string & getInstallName() const noexcept {
+    return installName;
+  }
+
   bool isInstallNameVersionSpecific() const noexcept;
   Platform getPlatform() const noexcept;
   PackedVersion32 getCurrentVersion() const noexcept;

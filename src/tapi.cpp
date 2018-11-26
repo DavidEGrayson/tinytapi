@@ -37,6 +37,26 @@ bool LinkerInterfaceFile::isSupported(const std::string & path,
   return detectYAML((const char *)data, size);
 }
 
+bool LinkerInterfaceFile::shouldPreferTextBasedStubFile(
+  const std::string & path) noexcept
+{
+  (void)path;
+  // Note: The original library would actually load the file and check
+  // "isInstallAPI()".  Not sure how important it is to do all that work so
+  // let's just return true for now.
+  return true;
+}
+
+static bool areEquivalent(const std::string & tbdPath,
+  const std::string & dylibPath) noexcept
+{
+  (void)tbdPath; (void)dylibPath;
+  // Note: The original library would load both files and check to see if they
+  // have some UUIDs in common.  I don't think the TBD files in the macOS
+  // SDK have UUIDs so this would always just return false.
+  return false;
+}
+
 LinkerInterfaceFile * LinkerInterfaceFile::create(const std::string & path,
   const uint8_t * data, size_t size,
   cpu_type_t cpuType, cpu_subtype_t cpuSubType,
@@ -84,7 +104,46 @@ LinkerInterfaceFile * LinkerInterfaceFile::create(const std::string & path,
 
   // ORIG: set patch level to 0 on minOSVersion
 
-  error = "Parsing unimplemented!";  // TODO
+  // Get the root node and make sure it is a mapping.
+  yaml_node_t * root;
+  if (!error.size())
+  {
+    root = yaml_document_get_root_node(&doc);
+    if (root->type != YAML_MAPPING_NODE)
+    {
+      error = "YAML root node is not a mapping.";
+    }
+  }
+
+  if (!error.size())
+  {
+    for (yaml_node_pair_t * pair = root->data.mapping.pairs.start;
+      pair < root->data.mapping.pairs.top; pair++)
+    {
+      yaml_node_t * key = yaml_document_get_node(&doc, pair->key);
+      yaml_node_t * value = yaml_document_get_node(&doc, pair->value);
+
+      if (key->type != YAML_SCALAR_NODE)
+      {
+        error = "Root mapping has a non-scalar key.";
+        break;
+      }
+
+      std::string key_str((const char *)key->data.scalar.value,
+        key->data.scalar.length);
+
+      if (key_str == "install-name")
+      {
+        if (value->type != YAML_SCALAR_NODE)
+        {
+          error = "Install name is not a scalar.";
+          break;
+        }
+        file->installName = { (const char *)value->data.scalar.value,
+          value->data.scalar.length };
+      }
+    }
+  }
 
   yaml_parser_delete(&parser);
   yaml_document_delete(&doc);
