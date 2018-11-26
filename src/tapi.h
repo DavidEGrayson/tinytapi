@@ -60,6 +60,7 @@ public:
 class LinkerInterfaceFile {
   LinkerInterfaceFile() = default;
 public:
+  /** Let's hope we don't need any of these:
   LinkerInterfaceFile(const LinkerInterfaceFile &) noexcept = delete;
   LinkerInterfaceFile & operator=(const LinkerInterfaceFile &) noexcept = delete;
 
@@ -67,6 +68,7 @@ public:
   LinkerInterfaceFile & operator=(LinkerInterfaceFile &&) noexcept;
 
   ~LinkerInterfaceFile() noexcept;
+  **/
 
   static LinkerInterfaceFile * create(const std::string & path,
     const uint8_t * data, size_t size,

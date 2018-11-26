@@ -1,10 +1,40 @@
 #include "tapi.h"
 #include "yaml.h"
 
+#include <string.h>
+
 using namespace tapi;
 
 unsigned APIVersion::getMajor() noexcept {
   return 2;  // 2.0.0
+}
+
+static bool isWhiteSpace(char c)
+{
+  return c == '\r' || c == '\n' || c == ' ' || c == '\t';
+}
+
+static bool detectYAML(const char * data, size_t size) {
+  // Ignore whitespace at the end.
+  while (size && isWhiteSpace(data[size - 1])) { size--; }
+
+  auto startsWith = [&](const std::string & str) -> bool {
+    return size >= str.size() && std::string(data, str.size()) == str;
+  };
+
+  auto endsWith = [&](const std::string & str) -> bool {
+    return size >= str.size() &&
+      std::string(data + size - str.size(), str.size()) == str;
+  };
+
+  return startsWith("---") && endsWith("...");
+}
+
+bool LinkerInterfaceFile::isSupported(const std::string & path,
+  const uint8_t * data, size_t size) noexcept
+{
+  (void)path;
+  return detectYAML((const char *)data, size);
 }
 
 LinkerInterfaceFile * LinkerInterfaceFile::create(const std::string & path,
@@ -25,9 +55,8 @@ LinkerInterfaceFile * LinkerInterfaceFile::create(const std::string & path,
     return NULL;
   }
 
-  if (strcmp(data, "---"))
-  {
-    error = "Data does not start with three dashes; might be a binary.";
+  if (!detectYAML((const char *)data, size)) {
+    error = "File does not look like YAML; might be a binary.";
     return NULL;
   }
 

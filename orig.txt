@@ -19,3 +19,11 @@ TextStub_v2.cpp, canRead:
 TextStub_v3.cpp, canRead:
   - must start with: --- !tapi-tbd-v3
   - must end with:   ...
+
+
+YAMLDocumentHandlers from Registry.addYAMLReaders():
+  stub::v1::YAMLDocumentHandler -> lib/Core/TextStub_v1.cpp
+  stub::v2::YAMLDocumentHandler
+  api::v1::YAMLDocumentHandler
+  configuration::v1::YAMLDocumentHandler
+
