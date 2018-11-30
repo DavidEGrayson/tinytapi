@@ -1,11 +1,19 @@
+// API of this library
 #include "tapi.h"
+
+// External libraries
 #include "yaml.h"
 
+// Standard external libraries
 #include <string.h>
+
+// Components of this compilation unit
+#include "arch.h"
 
 using namespace tapi;
 
-unsigned APIVersion::getMajor() noexcept {
+unsigned APIVersion::getMajor() noexcept
+{
   return 2;  // 2.0.0
 }
 
@@ -14,7 +22,8 @@ static bool isWhiteSpace(char c)
   return c == '\r' || c == '\n' || c == ' ' || c == '\t';
 }
 
-static bool detectYAML(const char * data, size_t size) {
+static bool detectYAML(const char * data, size_t size)
+{
   // Ignore whitespace at the end.
   while (size && isWhiteSpace(data[size - 1])) { size--; }
 
@@ -61,44 +70,59 @@ LinkerInterfaceFile * LinkerInterfaceFile::create(const std::string & path,
   const uint8_t * data, size_t size,
   cpu_type_t cpuType, cpu_subtype_t cpuSubType,
   CpuSubTypeMatching matchingMode, PackedVersion32 minOSVersion,
-  std::string & error) noexcept {
-
+  std::string & error) noexcept
+{
   error.clear();
 
-  if (path.empty()) {
+  if (path.empty())
+  {
     error = "The path argument is empty.";
-    return NULL;
+    return nullptr;
   }
 
-  if (data == NULL) {
-    error = "The data pointer is null.";
-    return NULL;
+  if (data == nullptr)
+  {
+    error = "The data pointer is nullptr.";
+    return nullptr;
   }
 
-  if (!detectYAML((const char *)data, size)) {
+  Architecture arch = getCpuArch(cpuType, cpuSubType);
+  if (arch == Architecture::None)
+  {
+    error = "Unrecognized architecture.";
+    return nullptrptr;
+  }
+
+  if (!detectYAML((const char *)data, size))
+  {
     error = "File does not look like YAML; might be a binary.";
-    return NULL;
+    return nullptr;
   }
 
   yaml_parser_t parser;
-  if (!error.size()) {
+  if (!error.size())
+  {
     int success = yaml_parser_initialize(&parser);
-    if (!success) {
+    if (!success)
+    {
       error = "Failed to initialize YAML parser.";
     }
   }
 
   yaml_document_t doc;
-  if (!error.size()) {
+  if (!error.size())
+  {
     yaml_parser_set_input_string(&parser, data, size);
     int success = yaml_parser_load(&parser, &doc);
-    if (!success) {
+    if (!success)
+    {
       error = "Failed to initialize YAML parser.";
     }
   }
 
-  LinkerInterfaceFile * file = NULL;
-  if (!error.size()) {
+  LinkerInterfaceFile * file = nullptr;
+  if (!error.size())
+  {
     file = new LinkerInterfaceFile();
   }
 
@@ -148,9 +172,10 @@ LinkerInterfaceFile * LinkerInterfaceFile::create(const std::string & path,
   yaml_parser_delete(&parser);
   yaml_document_delete(&doc);
 
-  if (error.size() && file) {
+  if (error.size() && file)
+  {
     delete file;
-    file = NULL;
+    file = nullptr;
   }
 
   return file;
