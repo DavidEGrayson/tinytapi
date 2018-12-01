@@ -6,6 +6,7 @@
 
 // Standard external libraries
 #include <string.h>
+#include <iostream>  // TODO: remove
 
 // Components of this compilation unit
 #include "arch.h"
@@ -45,6 +46,40 @@ static bool detectYAML(const uint8_t * udata, size_t size)
   };
 
   return startsWith("---") && endsWith("...");
+}
+
+static std::string convertYAMLString(const yaml_node_t * node)
+{
+  if (node->type != YAML_SCALAR_NODE) { return ""; }
+  return { (const char *)node->data.scalar.value,
+    node->data.scalar.length };
+}
+
+static std::vector<Architecture> convertYAMLArchList(
+  yaml_document_t * doc, yaml_node_t * node,
+  std::string & error)
+{
+  if (node->type != YAML_SEQUENCE_NODE)
+  {
+    error = "List of architectures is not a sequence.";
+    return {};
+  }
+
+  std::vector<Architecture> list;
+
+  yaml_node_item_t * start = node->data.sequence.items.start;
+  yaml_node_item_t * top = node->data.sequence.items.top;
+  for (yaml_node_item_t * i = start; i < top; i++)
+  {
+    yaml_node_t * node = yaml_document_get_node(doc, *i);
+    Architecture arch = getArchByName(convertYAMLString(node));
+    if (arch != Architecture::None)
+    {
+      list.push_back(arch);
+    }
+  }
+
+  return list;
 }
 
 static StubData parseYAML(const uint8_t * data, size_t size,
@@ -89,27 +124,30 @@ static StubData parseYAML(const uint8_t * data, size_t size,
     for (yaml_node_pair_t * pair = root->data.mapping.pairs.start;
       pair < root->data.mapping.pairs.top; pair++)
     {
-      yaml_node_t * key = yaml_document_get_node(&doc, pair->key);
-      yaml_node_t * value = yaml_document_get_node(&doc, pair->value);
+      yaml_node_t * key_node = yaml_document_get_node(&doc, pair->key);
+      yaml_node_t * value_node = yaml_document_get_node(&doc, pair->value);
 
-      if (key->type != YAML_SCALAR_NODE)
+      if (key_node->type != YAML_SCALAR_NODE)
       {
         error = "Root mapping has a non-scalar key.";
         break;
       }
 
-      std::string key_str((const char *)key->data.scalar.value,
-        key->data.scalar.length);
+      std::string key = convertYAMLString(key_node);
 
-      if (key_str == "install-name")
+      if (key == "install-name")
       {
-        if (value->type != YAML_SCALAR_NODE)
+        if (value_node->type != YAML_SCALAR_NODE)
         {
           error = "Install name is not a scalar.";
           break;
         }
-        r.installName = { (const char *)value->data.scalar.value,
-          value->data.scalar.length };
+        r.installName = convertYAMLString(value_node);
+      }
+      else if (key == "archs")
+      {
+        r.archs = convertYAMLArchList(&doc, value_node, error);
+        if (error.size()) { break; }
       }
     }
   }
@@ -157,7 +195,7 @@ void LinkerInterfaceFile::init(const StubData & d,
   Architecture cpuArch = getCpuArch(cpuType, cpuSubType);
   if (cpuArch == Architecture::None)
   {
-    error = "Unrecognized architecture.";
+    error = "Unrecognized desired architecture.";
     return;
   }
 

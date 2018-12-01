@@ -62,6 +62,20 @@ static Architecture getCpuArch(cpu_type_t cpuType, cpu_subtype_t cpuSubType)
   return Architecture::None;
 }
 
+static Architecture getArchByName(const std::string & name)
+{
+  for (size_t i = 1; i < archCount; i++)
+  {
+    Architecture arch = (Architecture)i;
+    auto info = getArchInfo(arch);
+    if (info.name == name)
+    {
+      return arch;
+    }
+  }
+  return Architecture::None;
+}
+
 static Architecture pickArchitecture(Architecture arch,
   bool enforceCpuSubType, const std::vector<Architecture> & list)
 {
