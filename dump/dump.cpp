@@ -12,6 +12,14 @@
 
 using namespace tapi;
 
+// From Apple's mach/machine.h
+#define CPU_ARCH_ABI64 0x1000000
+#define CPU_TYPE_I386 ((cpu_type_t)7)
+#define CPU_TYPE_X86_64 ((cpu_type_t)(CPU_TYPE_I386 | CPU_ARCH_ABI64))
+#define CPU_SUBTYPE_I386_ALL ((cpu_subtype_t)3)
+#define CPU_SUBTYPE_X86_64_ALL CPU_SUBTYPE_I386_ALL
+#define CPU_SUBTYPE_X86_64_H ((cpu_subtype_t)8)
+
 static void dump(const std::string & filename) {
   std::cout << "---- " << filename << std::endl;
 
@@ -44,7 +52,7 @@ static void dump(const std::string & filename) {
   std::string errorMessage;
 
   LinkerInterfaceFile * file = LinkerInterfaceFile::create(filename,
-    data.data(), data.size(), cpuType, cpuSubType,
+    data.data(), data.size(), CPU_TYPE_X86_64, CPU_SUBTYPE_X86_64_ALL,
     CpuSubTypeMatching::ABI_Compatible, minOSVersion, errorMessage);
 
   if (errorMessage.size())

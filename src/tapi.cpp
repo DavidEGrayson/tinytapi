@@ -165,7 +165,7 @@ void LinkerInterfaceFile::init(const StubData & d,
   Architecture arch = pickArchitecture(cpuArch, enforceCpuSubType, d.archs);
   if (arch == Architecture::None)
   {
-    error = "Architecture " + std::string(getArchInfo(arch).name)
+    error = "Architecture " + std::string(getArchInfo(cpuArch).name)
       + " not found in file.";
     return;
   }
