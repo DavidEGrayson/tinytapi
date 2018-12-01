@@ -12,6 +12,12 @@
 
 using namespace tapi;
 
+struct tapi::StubData
+{
+  std::vector<Architecture> archs;
+  std::string installName;
+};
+
 unsigned APIVersion::getMajor() noexcept
 {
   return 2;  // 2.0.0
@@ -22,8 +28,10 @@ static bool isWhiteSpace(char c)
   return c == '\r' || c == '\n' || c == ' ' || c == '\t';
 }
 
-static bool detectYAML(const char * data, size_t size)
+static bool detectYAML(const uint8_t * udata, size_t size)
 {
+  const char * data = (const char *)udata;
+
   // Ignore whitespace at the end.
   while (size && isWhiteSpace(data[size - 1])) { size--; }
 
@@ -39,65 +47,10 @@ static bool detectYAML(const char * data, size_t size)
   return startsWith("---") && endsWith("...");
 }
 
-bool LinkerInterfaceFile::isSupported(const std::string & path,
-  const uint8_t * data, size_t size) noexcept
+static StubData parseYAML(const uint8_t * data, size_t size,
+  std::string & error)
 {
-  (void)path;
-  return detectYAML((const char *)data, size);
-}
-
-bool LinkerInterfaceFile::shouldPreferTextBasedStubFile(
-  const std::string & path) noexcept
-{
-  (void)path;
-  // Note: The original library would actually load the file and check
-  // "isInstallAPI()".  Not sure how important it is to do all that work so
-  // let's just return true for now.
-  return true;
-}
-
-static bool areEquivalent(const std::string & tbdPath,
-  const std::string & dylibPath) noexcept
-{
-  (void)tbdPath; (void)dylibPath;
-  // Note: The original library would load both files and check to see if they
-  // have some UUIDs in common.  I don't think the TBD files in the macOS
-  // SDK have UUIDs so this would always just return false.
-  return false;
-}
-
-LinkerInterfaceFile * LinkerInterfaceFile::create(const std::string & path,
-  const uint8_t * data, size_t size,
-  cpu_type_t cpuType, cpu_subtype_t cpuSubType,
-  CpuSubTypeMatching matchingMode, PackedVersion32 minOSVersion,
-  std::string & error) noexcept
-{
-  error.clear();
-
-  if (path.empty())
-  {
-    error = "The path argument is empty.";
-    return nullptr;
-  }
-
-  if (data == nullptr)
-  {
-    error = "The data pointer is nullptr.";
-    return nullptr;
-  }
-
-  Architecture arch = getCpuArch(cpuType, cpuSubType);
-  if (arch == Architecture::None)
-  {
-    error = "Unrecognized architecture.";
-    return nullptrptr;
-  }
-
-  if (!detectYAML((const char *)data, size))
-  {
-    error = "File does not look like YAML; might be a binary.";
-    return nullptr;
-  }
+  StubData r;
 
   yaml_parser_t parser;
   if (!error.size())
@@ -119,14 +72,6 @@ LinkerInterfaceFile * LinkerInterfaceFile::create(const std::string & path,
       error = "Failed to initialize YAML parser.";
     }
   }
-
-  LinkerInterfaceFile * file = nullptr;
-  if (!error.size())
-  {
-    file = new LinkerInterfaceFile();
-  }
-
-  // ORIG: set patch level to 0 on minOSVersion
 
   // Get the root node and make sure it is a mapping.
   yaml_node_t * root;
@@ -163,7 +108,7 @@ LinkerInterfaceFile * LinkerInterfaceFile::create(const std::string & path,
           error = "Install name is not a scalar.";
           break;
         }
-        file->installName = { (const char *)value->data.scalar.value,
+        r.installName = { (const char *)value->data.scalar.value,
           value->data.scalar.length };
       }
     }
@@ -172,10 +117,103 @@ LinkerInterfaceFile * LinkerInterfaceFile::create(const std::string & path,
   yaml_parser_delete(&parser);
   yaml_document_delete(&doc);
 
-  if (error.size() && file)
+  return r;
+}
+
+bool LinkerInterfaceFile::isSupported(const std::string & path,
+  const uint8_t * data, size_t size) noexcept
+{
+  (void)path;
+  return detectYAML(data, size);
+}
+
+bool LinkerInterfaceFile::shouldPreferTextBasedStubFile(
+  const std::string & path) noexcept
+{
+  (void)path;
+  // Note: The original library would actually load the file and check
+  // "isInstallAPI()".  Not sure how important it is to do all that work so
+  // let's just return true for now.
+  return true;
+}
+
+bool LinkerInterfaceFile::areEquivalent(const std::string & tbdPath,
+  const std::string & dylibPath) noexcept
+{
+  (void)tbdPath; (void)dylibPath;
+  // Note: The original library would load both files and check to see if they
+  // have some UUIDs in common.  I don't think the TBD files in the macOS
+  // SDK have UUIDs so this would always just return false.
+  return false;
+}
+
+void LinkerInterfaceFile::init(const StubData & d,
+  cpu_type_t cpuType, cpu_subtype_t cpuSubType,
+  CpuSubTypeMatching matchingMode, PackedVersion32 minOSVersion,
+  std::string & error)
+{
+  this->installName = d.installName;
+
+  Architecture cpuArch = getCpuArch(cpuType, cpuSubType);
+  if (cpuArch == Architecture::None)
+  {
+    error = "Unrecognized architecture.";
+    return;
+  }
+
+  bool enforceCpuSubType = matchingMode == CpuSubTypeMatching::Exact;
+  Architecture arch = pickArchitecture(cpuArch, enforceCpuSubType, d.archs);
+  if (arch == Architecture::None)
+  {
+    error = "Architecture " + std::string(getArchInfo(arch).name)
+      + " not found in file.";
+    return;
+  }
+
+  // ORIG: set patch level to 0 on minOSVersion
+}
+
+LinkerInterfaceFile * LinkerInterfaceFile::create(const std::string & path,
+  const uint8_t * data, size_t size,
+  cpu_type_t cpuType, cpu_subtype_t cpuSubType,
+  CpuSubTypeMatching matchingMode, PackedVersion32 minOSVersion,
+  std::string & error) noexcept
+{
+  error.clear();
+
+  if (path.empty())
+  {
+    error = "The path argument is empty.";
+    return nullptr;
+  }
+
+  if (data == nullptr)
+  {
+    error = "The data pointer is nullptr.";
+    return nullptr;
+  }
+
+  StubData d;
+
+  if (detectYAML(data, size))
+  {
+    d = parseYAML(data, size, error);
+  }
+  else
+  {
+    error = "File does not look like YAML; might be a binary.";
+    return nullptr;
+  }
+
+  if (error.size()) { return nullptr; }
+
+  LinkerInterfaceFile * file = new LinkerInterfaceFile();
+  file->init(d, cpuType, cpuSubType, matchingMode, minOSVersion, error);
+
+  if (error.size())
   {
     delete file;
-    file = nullptr;
+    return nullptr;
   }
 
   return file;

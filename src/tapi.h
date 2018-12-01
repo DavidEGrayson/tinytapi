@@ -9,6 +9,9 @@ using cpu_subtype_t = int;
 
 namespace tapi {
 
+// Internally used class; ideally this wouldn't even be here.
+struct StubData;
+
 class APIVersion {
 public:
   static unsigned getMajor() noexcept;
@@ -62,6 +65,10 @@ class LinkerInterfaceFile {
 
   std::string installName;
 
+  void init(const StubData &, cpu_type_t, cpu_subtype_t,
+    CpuSubTypeMatching, PackedVersion32 minOSVersion,
+    std::string & errorMessage);
+
 public:
   /** Let's hope we don't need any of these:
   LinkerInterfaceFile(const LinkerInterfaceFile &) noexcept = delete;
@@ -74,9 +81,8 @@ public:
   **/
 
   static LinkerInterfaceFile * create(const std::string & path,
-    const uint8_t * data, size_t size,
-    cpu_type_t cpuType, cpu_subtype_t cpuSubType,
-    CpuSubTypeMatching matchingMode, PackedVersion32 minOSVersion,
+    const uint8_t * data, size_t size, cpu_type_t, cpu_subtype_t,
+    CpuSubTypeMatching, PackedVersion32 minOSVersion,
     std::string & errorMessage) noexcept;
 
   static bool isSupported(const std::string & path,

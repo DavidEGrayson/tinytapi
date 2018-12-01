@@ -30,26 +30,54 @@ enum class Architecture
 };
 
 static const ArchInfo archInfoArray[] = {
-  { "unknown", 0, 0 },
+  { "none", 0, 0 },
   { "x86_64", CPU_TYPE_X86_64, CPU_SUBTYPE_X86_64_ALL },
   { "x86_64h", CPU_TYPE_X86_64, CPU_SUBTYPE_X86_64_H },
   { "i386", CPU_TYPE_X86_64, CPU_SUBTYPE_I386_ALL },
-  { nullptr },
 };
+
+static const size_t archCount =
+  sizeof(archInfoArray)/sizeof(archInfoArray[0]);
 
 static const ArchInfo & getArchInfo(Architecture arch)
 {
   size_t index = (size_t)arch;
-  if (index >= sizeof(archInfoArray)/sizeof(archInfoArray[0]) - 1) {
+  if (index >= archCount)
+  {
     index = 0;
   }
   return archInfoArray[index];
 }
-
-static bool archMatch(
-  const ArchInfo & a,
-  const ArchInfo & b,
-  bool enforceCpuSubType)
+static Architecture getCpuArch(cpu_type_t cpuType, cpu_subtype_t cpuSubType)
 {
-  // TODO:
+  for (size_t i = 1; i < archCount; i++)
+  {
+    Architecture arch = (Architecture)i;
+    auto info = getArchInfo(arch);
+    if (info.cpuType == cpuType && info.cpuSubType == cpuSubType)
+    {
+      return arch;
+    }
+  }
+  return Architecture::None;
+}
+
+static Architecture pickArchitecture(Architecture arch,
+  bool enforceCpuSubType, const std::vector<Architecture> & list)
+{
+  for (Architecture a : list)
+  {
+    if (arch == a) { return a; }
+  }
+  if (!enforceCpuSubType)
+  {
+    for (Architecture a : list)
+    {
+      if (getArchInfo(arch).cpuType == getArchInfo(a).cpuType)
+      {
+        return a;
+      }
+    }
+  }
+  return Architecture::None;
 }
