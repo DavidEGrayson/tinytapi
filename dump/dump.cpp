@@ -23,8 +23,8 @@ using namespace tapi;
 static void dump(const std::string & filename) {
   std::cout << "---- " << filename << std::endl;
 
-  cpu_type_t cpuType = 0;
-  cpu_subtype_t cpuSubType = 0;
+  cpu_type_t cpuType = CPU_TYPE_X86_64;
+  cpu_subtype_t cpuSubType = CPU_SUBTYPE_X86_64_ALL;
   PackedVersion32 minOSVersion(0x1011);  // TODO: is that the correct format?
 
   std::ifstream stream(filename);
@@ -52,7 +52,7 @@ static void dump(const std::string & filename) {
   std::string errorMessage;
 
   LinkerInterfaceFile * file = LinkerInterfaceFile::create(filename,
-    data.data(), data.size(), CPU_TYPE_X86_64, CPU_SUBTYPE_X86_64_ALL,
+    data.data(), data.size(), cpuType, cpuSubType,
     CpuSubTypeMatching::ABI_Compatible, minOSVersion, errorMessage);
 
   if (errorMessage.size())
