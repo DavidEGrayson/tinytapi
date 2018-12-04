@@ -28,6 +28,15 @@ public:
   PackedVersion32() = default;
   PackedVersion32(uint32_t v) : version(v) {}
   operator unsigned() const noexcept { return version; }
+
+  unsigned int getMajor() const noexcept { return version >> 16 & 0xFF; }
+  unsigned int getMinor() const noexcept { return version >> 8 & 0xFF; }
+  unsigned int getPatch() const noexcept { return version & 0xFF; }
+
+  void setPatch(unsigned int v) noexcept
+  {
+    version = (version & 0xFFFFFF00) | (v & 0xFF);
+  }
 };
 
 enum class ObjCConstraint : unsigned {

@@ -179,9 +179,8 @@ bool LinkerInterfaceFile::areEquivalent(const std::string & tbdPath,
   const std::string & dylibPath) noexcept
 {
   (void)tbdPath; (void)dylibPath;
-  // Note: The original library would load both files and check to see if they
-  // have some UUIDs in common.  I don't think the TBD files in the macOS
-  // SDK have UUIDs so this would always just return false.
+  // TODO: Load both files and check to see if they have some UUIDs in
+  // common or something.
   return false;
 }
 
@@ -208,7 +207,7 @@ void LinkerInterfaceFile::init(const StubData & d,
     return;
   }
 
-  // ORIG: set patch level to 0 on minOSVersion
+  minOSVersion.setPatch(0);
 }
 
 LinkerInterfaceFile * LinkerInterfaceFile::create(const std::string & path,
