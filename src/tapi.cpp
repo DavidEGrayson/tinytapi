@@ -13,11 +13,18 @@
 
 using namespace tapi;
 
+struct ExportItem
+{
+  std::vector<Architecture> archs;
+  std::vector<std::string> symbols;
+};
+
 struct tapi::StubData
 {
   std::vector<Architecture> archs;
   Platform platform;
   std::string installName;
+  std::vector<ExportItem> exports;
 };
 
 unsigned APIVersion::getMajor() noexcept
@@ -67,30 +74,73 @@ static Platform convertYAMLPlatform(const yaml_node_t * node)
   return Platform::Unknown;
 }
 
-static std::vector<Architecture> convertYAMLArchList(
-  yaml_document_t * doc, yaml_node_t * node,
-  std::string & error)
+static std::vector<std::string> convertYAMLStringList(
+  yaml_document_t * doc, yaml_node_t * node)
 {
-  if (node->type != YAML_SEQUENCE_NODE)
+  if (node->type != YAML_SEQUENCE_NODE) { return {}; }
+  std::vector<std::string> list;
+  yaml_node_item_t * start = node->data.sequence.items.start;
+  yaml_node_item_t * top = node->data.sequence.items.top;
+  for (yaml_node_item_t * i = start; i < top; i++)
   {
-    error = "List of architectures is not a sequence.";
-    return {};
+    yaml_node_t * child = yaml_document_get_node(doc, *i);
+    list.push_back(convertYAMLString(child));
   }
+  return list;
+}
 
+static std::vector<Architecture> convertYAMLArchList(
+  yaml_document_t * doc, yaml_node_t * node)
+{
   std::vector<Architecture> list;
+  for (const std::string & name : convertYAMLStringList(doc, node))
+  {
+    Architecture arch = getArchByName(name);
+    if (arch != Architecture::None) { list.push_back(arch); }
+  }
+  return list;
+}
 
+static ExportItem convertYAMLExportItem(
+  yaml_document_t * doc, yaml_node_t * node)
+{
+  ExportItem item;
+  if (node->type != YAML_MAPPING_NODE) { return item; }
+  yaml_node_pair_t * start = node->data.mapping.pairs.start;
+  yaml_node_pair_t * top = node->data.mapping.pairs.top;
+  for (yaml_node_pair_t * pair = start; pair < top; pair++)
+  {
+    yaml_node_t * key_node = yaml_document_get_node(doc, pair->key);
+    yaml_node_t * value_node = yaml_document_get_node(doc, pair->value);
+
+    if (key_node->type != YAML_SCALAR_NODE) { continue; }
+
+    std::string key = convertYAMLString(key_node);
+
+    if (key == "archs")
+    {
+      item.archs = convertYAMLArchList(doc, value_node);
+    }
+    else if (key == "symbols")
+    {
+      item.symbols = convertYAMLStringList(doc, value_node);
+    }
+  }
+  return item;
+}
+
+static std::vector<ExportItem> convertYAMLExportList(
+  yaml_document_t * doc, yaml_node_t * node)
+{
+  if (node->type != YAML_SEQUENCE_NODE) { return {}; }
+  std::vector<ExportItem> list;
   yaml_node_item_t * start = node->data.sequence.items.start;
   yaml_node_item_t * top = node->data.sequence.items.top;
   for (yaml_node_item_t * i = start; i < top; i++)
   {
     yaml_node_t * node = yaml_document_get_node(doc, *i);
-    Architecture arch = getArchByName(convertYAMLString(node));
-    if (arch != Architecture::None)
-    {
-      list.push_back(arch);
-    }
+    list.push_back(convertYAMLExportItem(doc, node));
   }
-
   return list;
 }
 
@@ -133,8 +183,9 @@ static StubData parseYAML(const uint8_t * data, size_t size,
 
   if (!error.size())
   {
-    for (yaml_node_pair_t * pair = root->data.mapping.pairs.start;
-      pair < root->data.mapping.pairs.top; pair++)
+    yaml_node_pair_t * start = root->data.mapping.pairs.start;
+    yaml_node_pair_t * top = root->data.mapping.pairs.top;
+    for (yaml_node_pair_t * pair = start; pair < top; pair++)
     {
       yaml_node_t * key_node = yaml_document_get_node(&doc, pair->key);
       yaml_node_t * value_node = yaml_document_get_node(&doc, pair->value);
@@ -157,8 +208,11 @@ static StubData parseYAML(const uint8_t * data, size_t size,
       }
       else if (key == "archs")
       {
-        r.archs = convertYAMLArchList(&doc, value_node, error);
-        if (error.size()) { break; }
+        r.archs = convertYAMLArchList(&doc, value_node);
+      }
+      else if (key == "exports")
+      {
+        r.exports = convertYAMLExportList(&doc, value_node);
       }
     }
   }
