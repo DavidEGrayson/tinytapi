@@ -63,10 +63,13 @@ enum class CpuSubTypeMatching : unsigned {
 
 class Symbol {
   std::string name;
+  bool weak = false;
+  bool threadLocal = false;
 public:
+  Symbol(const std::string & name) : name(name) { }
   const std::string & getName() const noexcept { return name; }
-  bool isWeakDefined() const noexcept;
-  bool isThreadLocalValue() const noexcept;
+  bool isWeakDefined() const noexcept { return weak; }
+  bool isThreadLocalValue() const noexcept { return threadLocal; }
 };
 
 class LinkerInterfaceFile {
@@ -74,6 +77,7 @@ class LinkerInterfaceFile {
 
   Platform platform;
   std::string installName;
+  std::vector<Symbol> exportList;
 
   void init(const StubData &, cpu_type_t, cpu_subtype_t,
     CpuSubTypeMatching, PackedVersion32 minOSVersion,
@@ -128,7 +132,7 @@ public:
 
   const std::vector<std::string> & ignoreExports() const noexcept;
 
-  const std::vector<Symbol> & exports() const noexcept;
+  const std::vector<Symbol> & exports() const noexcept { return exportList; }
 
   const std::vector<Symbol> & undefineds() const noexcept;
 };

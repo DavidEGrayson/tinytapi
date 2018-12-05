@@ -265,12 +265,32 @@ void LinkerInterfaceFile::init(const StubData & d,
   }
 
   bool enforceCpuSubType = matchingMode == CpuSubTypeMatching::Exact;
-  Architecture arch = pickArchitecture(cpuArch, enforceCpuSubType, d.archs);
-  if (arch == Architecture::None)
+  Architecture selectedArch = pickArchitecture(
+    cpuArch, enforceCpuSubType, d.archs);
+  if (selectedArch == Architecture::None)
   {
     error = "Architecture " + std::string(getArchInfo(cpuArch).name)
       + " not found in file.";
     return;
+  }
+
+  for (const ExportItem & item : d.exports)
+  {
+    bool hasSelectedArch = false;
+    for (const Architecture & arch : item.archs)
+    {
+      if (arch == selectedArch)
+      {
+        hasSelectedArch = true;
+        break;
+      }
+    }
+    if (!hasSelectedArch) { continue; }
+
+    for (const std::string & name : item.symbols)
+    {
+      this->exportList.push_back(Symbol(name));
+    }
   }
 
   minOSVersion.setPatch(0);

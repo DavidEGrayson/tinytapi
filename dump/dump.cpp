@@ -20,6 +20,20 @@ using namespace tapi;
 #define CPU_SUBTYPE_X86_64_ALL CPU_SUBTYPE_I386_ALL
 #define CPU_SUBTYPE_X86_64_H ((cpu_subtype_t)8)
 
+static void dumpSymbol(const Symbol & sym)
+{
+  std::cout << "  " << sym.getName();
+  if (sym.isWeakDefined())
+  {
+    std::cout << " (weak)";
+  }
+  if (sym.isThreadLocalValue())
+  {
+    std::cout << " (thread local)";
+  }
+  std::cout << std::endl;
+}
+
 static void dump(const std::string & filename) {
   std::cout << "---- " << filename << std::endl;
 
@@ -76,6 +90,12 @@ static void dump(const std::string & filename) {
 
   // Note: would be nice to show the actual name of the platform
   std::cout << "platform: " << (unsigned)file->getPlatform() << std::endl;
+
+  std::cout << "exports: " << std::endl;
+  for (const Symbol & sym : file->exports())
+  {
+    dumpSymbol(sym);
+  }
 
   delete file;
 }
