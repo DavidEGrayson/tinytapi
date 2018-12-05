@@ -72,6 +72,7 @@ public:
 class LinkerInterfaceFile {
   LinkerInterfaceFile() = default;
 
+  Platform platform;
   std::string installName;
 
   void init(const StubData &, cpu_type_t, cpu_subtype_t,
@@ -108,7 +109,7 @@ public:
   }
 
   bool isInstallNameVersionSpecific() const noexcept;
-  Platform getPlatform() const noexcept;
+  Platform getPlatform() const noexcept { return platform; }
   PackedVersion32 getCurrentVersion() const noexcept;
   PackedVersion32 getCompatibilityVersion() const noexcept;
   unsigned getSwiftVersion() const noexcept;

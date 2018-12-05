@@ -16,6 +16,7 @@ using namespace tapi;
 struct tapi::StubData
 {
   std::vector<Architecture> archs;
+  Platform platform;
   std::string installName;
 };
 
@@ -53,6 +54,17 @@ static std::string convertYAMLString(const yaml_node_t * node)
   if (node->type != YAML_SCALAR_NODE) { return ""; }
   return { (const char *)node->data.scalar.value,
     node->data.scalar.length };
+}
+
+static Platform convertYAMLPlatform(const yaml_node_t * node)
+{
+  std::string str = convertYAMLString(node);
+  if (str == "macosx") { return Platform::OSX; }
+  else if (str == "ios") { return Platform::iOS; }
+  else if (str == "watchos") { return Platform::watchOS; }
+  else if (str == "tvos") { return Platform::tvOS; }
+  else if (str == "bridgeos") { return Platform::bridgeOS; }
+  return Platform::Unknown;
 }
 
 static std::vector<Architecture> convertYAMLArchList(
@@ -144,6 +156,11 @@ static StubData parseYAML(const uint8_t * data, size_t size,
         }
         r.installName = convertYAMLString(value_node);
       }
+      else if (key == "platform")
+      {
+        r.platform = convertYAMLPlatform(value_node);
+        if (error.size()) { break; }
+      }
       else if (key == "archs")
       {
         r.archs = convertYAMLArchList(&doc, value_node, error);
@@ -189,6 +206,7 @@ void LinkerInterfaceFile::init(const StubData & d,
   CpuSubTypeMatching matchingMode, PackedVersion32 minOSVersion,
   std::string & error)
 {
+  this->platform = d.platform;
   this->installName = d.installName;
 
   Architecture cpuArch = getCpuArch(cpuType, cpuSubType);

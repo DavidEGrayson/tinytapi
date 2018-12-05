@@ -74,6 +74,9 @@ static void dump(const std::string & filename) {
 
   std::cout << "install-name: " << file->getInstallName() << std::endl;
 
+  // Note: would be nice to show the actual name of the platform
+  std::cout << "platform: " << (unsigned)file->getPlatform() << std::endl;
+
   delete file;
 }
 
