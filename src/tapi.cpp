@@ -147,19 +147,13 @@ static StubData parseYAML(const uint8_t * data, size_t size,
 
       std::string key = convertYAMLString(key_node);
 
-      if (key == "install-name")
-      {
-        if (value_node->type != YAML_SCALAR_NODE)
-        {
-          error = "Install name is not a scalar.";
-          break;
-        }
-        r.installName = convertYAMLString(value_node);
-      }
-      else if (key == "platform")
+      if (key == "platform")
       {
         r.platform = convertYAMLPlatform(value_node);
-        if (error.size()) { break; }
+      }
+      else if (key == "install-name")
+      {
+        r.installName = convertYAMLString(value_node);
       }
       else if (key == "archs")
       {
