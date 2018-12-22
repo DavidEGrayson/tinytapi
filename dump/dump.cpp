@@ -34,11 +34,11 @@ static void dumpSymbol(const Symbol & sym)
   std::cout << std::endl;
 }
 
-static void dump(const std::string & filename) {
-  std::cout << "---- " << filename << std::endl;
+static void dump(const std::string & filename,
+  const std::string & arch, cpu_type_t cpuType, cpu_subtype_t cpuSubType)
+{
+  std::cout << "---- " << filename << " " << arch << std::endl;
 
-  cpu_type_t cpuType = CPU_TYPE_X86_64;
-  cpu_subtype_t cpuSubType = CPU_SUBTYPE_X86_64_ALL;
   PackedVersion32 minOSVersion(0x1011);  // TODO: is that the correct format?
 
   std::ifstream stream(filename);
@@ -97,12 +97,22 @@ static void dump(const std::string & filename) {
     dumpSymbol(sym);
   }
 
+  std::cout << std::endl;
+
   delete file;
 }
 
-int main(int argc, char ** argv) {
-  for (int i = 1; i < argc; i++) {
-    dump(argv[i]);
-    std::cout << std::endl;
+static void dumpAsEveryArch(const std::string & filename)
+{
+  dump(filename, "x86_64", CPU_TYPE_X86_64, CPU_SUBTYPE_X86_64_ALL);
+  dump(filename, "x86_64h", CPU_TYPE_X86_64, CPU_SUBTYPE_X86_64_H);
+  dump(filename, "i386", CPU_TYPE_X86_64, CPU_SUBTYPE_I386_ALL);
+}
+
+int main(int argc, char ** argv)
+{
+  for (int i = 1; i < argc; i++)
+  {
+    dumpAsEveryArch(argv[i]);
   }
 }
