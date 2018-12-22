@@ -37,7 +37,7 @@ static void dumpSymbol(const Symbol & sym)
 static void dump(const std::string & filename,
   const std::string & arch, cpu_type_t cpuType, cpu_subtype_t cpuSubType)
 {
-  std::cout << "---- " << filename << " " << arch << std::endl;
+  std::cout << "==== " << filename << " " << arch << std::endl;
 
   PackedVersion32 minOSVersion(0x1011);  // TODO: is that the correct format?
 
@@ -67,11 +67,12 @@ static void dump(const std::string & filename,
 
   LinkerInterfaceFile * file = LinkerInterfaceFile::create(filename,
     data.data(), data.size(), cpuType, cpuSubType,
-    CpuSubTypeMatching::ABI_Compatible, minOSVersion, errorMessage);
+    CpuSubTypeMatching::Exact, minOSVersion, errorMessage);
 
   if (errorMessage.size())
   {
-    std::cerr << "Failed to parse: " << errorMessage << std::endl;
+    std::cout << "Failed to parse: " << errorMessage << std::endl;
+    std::cout << std::endl;
     if (file != NULL)
     {
       std::cerr <<
