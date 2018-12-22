@@ -54,4 +54,27 @@ rec {
     clang = clang5;
     native_inputs = [ clang ];
   };
+
+  tinytapi = native.make_derivation rec {
+    name = "tinytapi";
+    include_dir = ../include;
+    src_dir = ../src;
+    builder = ./tinytapi_builder.sh;
+    libyaml = nixpkgs.libyaml;
+    native_inputs = [ libyaml ];
+  };
+
+  apple_tapi_dump = native.make_derivation rec {
+    name = "apple-tapi-dump";
+    builder = ./dump_builder.sh;
+    src_file = ../dump/dump.cpp;
+    native_inputs = [ apple_tapi ];
+  };
+
+  tinytapi_dump = native.make_derivation rec {
+    name = "tinytapi-dump";
+    builder = ./dump_builder.sh;
+    src_file = ../dump/dump.cpp;
+    native_inputs = [ tinytapi ];
+  };
 }

@@ -2,7 +2,7 @@
 // information about them to the standard output.  Useful for testing libtapi
 // implementations.
 
-#include <tapi.h>
+#include <tapi/tapi.h>
 
 #include <string.h>
 
