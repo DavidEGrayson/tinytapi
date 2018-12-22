@@ -64,8 +64,8 @@ rec {
     native_inputs = [ libyaml ];
   };
 
-  apple_tapi_dump = native.make_derivation rec {
-    name = "apple-tapi-dump";
+  appletapi_dump = native.make_derivation rec {
+    name = "appletapi-dump";
     builder = ./dump_builder.sh;
     src_file = ../dump/dump.cpp;
     native_inputs = [ apple_tapi ];
@@ -76,5 +76,12 @@ rec {
     builder = ./dump_builder.sh;
     src_file = ../dump/dump.cpp;
     native_inputs = [ tinytapi ];
+  };
+
+  test = native.make_derivation rec {
+    name = "tinytapi-test";
+    builder = ./test.sh;
+    inherit sdk;
+    native_inputs = [ appletapi_dump tinytapi_dump ];
   };
 }
