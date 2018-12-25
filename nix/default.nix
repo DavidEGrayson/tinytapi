@@ -47,8 +47,9 @@ rec {
     version1 = "0";
     version2 = "0";
     src = nixpkgs.fetchurl {
-      url = "https://github.com/DavidEGrayson/tapi/archive/f98d0c3.tar.gz";
-      sha256 = "0jibz0fsyh47q8y3w6f0qspjh6fhs164rkhjg7x6k7qhlawcdy6g";
+      # url = "https://github.com/DavidEGrayson/tapi/archive/f98d0c3.tar.gz";
+      url = "https://github.com/DavidEGrayson/tapi/archive/305d9cf.tar.gz";
+      sha256 = "0462v33xjnsl988kb7wrh6l60kwliwf7rciy8mmmq7fs8z3zpgil";
     };
     builder = ./apple_tapi_builder.sh;
     clang = clang5;
@@ -67,14 +68,14 @@ rec {
   appletapi_dump = native.make_derivation rec {
     name = "appletapi-dump";
     builder = ./dump_builder.sh;
-    src_file = ../dump/dump.cpp;
+    src = ../dump;
     native_inputs = [ apple_tapi ];
   };
 
   tinytapi_dump = native.make_derivation rec {
     name = "tinytapi-dump";
     builder = ./dump_builder.sh;
-    src_file = ../dump/dump.cpp;
+    src = ../dump;
     native_inputs = [ tinytapi ];
   };
 

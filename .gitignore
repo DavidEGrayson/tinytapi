@@ -1,3 +1,5 @@
 .vscode
 /tapi-dump
 /result*
+/appletapi-dump
+/sdk

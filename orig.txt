@@ -16,7 +16,7 @@ TextStub_v2.cpp, canRead:
   - must start with: --- !tapi-tbd-v2
   - must end with:   ...
 
-TextStub_v3.cpp, canRead:
+TextStub_v3.cpp, canRead:  (not actually used!)
   - must start with: --- !tapi-tbd-v3
   - must end with:   ...
 

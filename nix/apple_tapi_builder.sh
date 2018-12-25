@@ -38,7 +38,7 @@ function build-lib() {
   lib=$2
   mkdir $lib.o
   for f in $libsrc/*.cpp; do
-    echo "compiling $f"
+    echo "compiling ${f/$srcd\/}"
     g++ -c $CFLAGS $f -o $lib.o/$(basename $f).o
   done
   echo "archiving $lib"
