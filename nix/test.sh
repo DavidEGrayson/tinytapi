@@ -3,9 +3,11 @@ source $setup
 FILES="$sdk/usr/lib/*.tbd"
 
 mkdir $out
+cd $out
 
 echo appletapi
-appletapi-dump $FILES > $out/appletapi.txt
+appletapi-dump $FILES > appletapi.txt
 echo tinytapi
-tinytapi-dump $FILES > $out/tinytapi.txt
-echo done
+tinytapi-dump $FILES > tinytapi.txt
+
+diff appletapi.txt tinytapi.txt && echo success || echo fail

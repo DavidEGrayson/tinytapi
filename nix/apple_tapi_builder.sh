@@ -1,7 +1,10 @@
 source $setup
 
+mkdir -p $out
+
 tar -xf $src
-mv tapi-* tapi
+srcd=$out/src
+mv tapi-* $srcd
 
 mkdir build
 cd build
@@ -24,14 +27,14 @@ EOF
 
 clang-tblgen -I$clang/include -gen-clang-diags-defs \
   -o include/tapi/Driver/DiagnosticTAPIKinds.inc \
-  ../tapi/include/tapi/Driver/DiagnosticTAPIKinds.td
+  $srcd/include/tapi/Driver/DiagnosticTAPIKinds.td
 
 llvm-tblgen -I$clang/include -gen-opt-parser-defs \
   -o include/tapi/Driver/TAPIOptions.inc \
-  ../tapi/include/tapi/Driver/TAPIOptions.td
+  $srcd/include/tapi/Driver/TAPIOptions.td
 
 function build-lib() {
-  libsrc=$1
+  libsrc=$srcd/$1
   lib=$2
   mkdir $lib.o
   for f in $libsrc/*.cpp; do
@@ -42,30 +45,30 @@ function build-lib() {
   ar cr $lib $lib.o/*.o
 }
 
-CFLAGS="-std=gnu++11 -O2 -Iinclude -I../tapi/include -I$clang/include"
+CFLAGS="-g -O0 -std=gnu++11 -Iinclude -I$srcd/include -I$clang/include"
 
-build-lib ../tapi/tools/libtapi libtapi.a
-build-lib ../tapi/lib/Config libtapiConfig.a
-build-lib ../tapi/lib/Core libtapiCore.a
-build-lib ../tapi/lib/Driver libtapiDriver.a
-build-lib ../tapi/lib/Scanner libtapiScanner.a
-build-lib ../tapi/lib/SDKDB libtapiSDKDB.a
+build-lib tools/libtapi libtapi.a
+build-lib lib/Config libtapiConfig.a
+build-lib lib/Core libtapiCore.a
+build-lib lib/Driver libtapiDriver.a
+build-lib lib/Scanner libtapiScanner.a
+build-lib lib/SDKDB libtapiSDKDB.a
 
 CLANG_LIBS="-lclangTooling -lclangFrontend -lclangDriver -lclangSerialization -lclangParse -lclangSema -lclangAST -lclangAnalysis -lclangEdit -lclangLex -lclangBasic -lLLVMDemangle -lLLVMObject -lLLVMBitReader -lLLVMMC -lLLVMMCParser -lLLVMCore -lLLVMBinaryFormat -lLLVMOption -lLLVMProfileData -lLLVMSupport"
 
 LDFLAGS="-L$clang/lib -L. -ltapi -ltapiDriver -ltapiCore -ltapiDriver -ltapiScanner -ltapiSDKDB -ltapiConfig $CLANG_LIBS -lpthread"
 
 echo "building tapi"
-g++ $CFLAGS ../tapi/tools/tapi/tapi.cpp $LDFLAGS -o tapi
+g++ $CFLAGS $srcd/tools/tapi/tapi.cpp $LDFLAGS -o tapi
 
 echo "building tapi-run"
-g++ $CFLAGS ../tapi/tools/tapi-run/tapi-run.cpp $LDFLAGS -o tapi-run
+g++ $CFLAGS $srcd/tools/tapi-run/tapi-run.cpp $LDFLAGS -o tapi-run
 
 mkdir -p $out/lib/pkgconfig $out/bin
 cp *.a $out/lib
 cp tapi tapi-run $out/bin
 
-cp -r ../tapi/include $out/
+cp -r $srcd/include $out/
 
 cp include/tapi/Version.inc $out/include/tapi/
 
