@@ -16,8 +16,7 @@ using namespace tapi;
 struct ExportItem
 {
   std::vector<Architecture> archs;
-  std::vector<std::string> symbols;
-  std::vector<std::string> weak_symbols;
+  std::vector<std::string> symbols, weak_symbols, objc_classes, objc_ivars;
 };
 
 struct tapi::StubData
@@ -131,6 +130,15 @@ static ExportItem convertYAMLExportItem(
     {
       item.weak_symbols = convertYAMLStringList(doc, value_node);
     }
+    else if (key == "objc-classes")
+    {
+      item.objc_classes = convertYAMLStringList(doc, value_node);
+    }
+    else if (key == "objc-ivars")
+    {
+      item.objc_ivars = convertYAMLStringList(doc, value_node);
+    }
+    // TODO: re-exports
   }
   return item;
 }
@@ -220,6 +228,10 @@ static StubData parseYAML(const uint8_t * data, size_t size,
       {
         r.exports = convertYAMLExportList(&doc, value_node);
       }
+      // TODO: objc-constraints
+      // TODO: current-version
+      // TODO: compatibility-version
+      // TODO: uuids
     }
   }
 
@@ -260,8 +272,8 @@ void LinkerInterfaceFile::init(const StubData & d,
   CpuSubTypeMatching matchingMode, PackedVersion32 minOSVersion,
   std::string & error)
 {
-  this->platform = d.platform;
-  this->installName = d.installName;
+  platform = d.platform;
+  installName = d.installName;
 
   Architecture cpuArch = getCpuArch(cpuType, cpuSubType);
   if (cpuArch == Architecture::None)
@@ -296,14 +308,39 @@ void LinkerInterfaceFile::init(const StubData & d,
 
     for (const std::string & name : item.symbols)
     {
-      this->exportList.push_back(Symbol(name));
+      exportList.push_back(name);
     }
 
     for (const std::string & name : item.weak_symbols)
     {
       Symbol sym(name);
       sym.weak = true;
-      this->exportList.push_back(sym);
+      exportList.push_back(sym);
+    }
+
+    for (const std::string & name : item.objc_classes)
+    {
+      exportList.push_back("_OBJC_CLASS_$_" + name);
+      exportList.push_back("_OBJC_METACLASS_$_" + name);
+    }
+
+    for (const std::string & name : item.objc_ivars)
+    {
+      exportList.push_back("_OBJC_IVAR_$_" + name);
+    }
+  }
+
+  auto it = exportList.begin();
+  while (it != exportList.end())
+  {
+    const Symbol & sym = *it;
+    if (sym.name.substr(0, 11) == "$ld$hide$os")
+    {
+        it = exportList.erase(it);
+    }
+    else
+    {
+      ++it;
     }
   }
 
