@@ -262,7 +262,12 @@ bool LinkerInterfaceFile::shouldPreferTextBasedStubFile(
 bool LinkerInterfaceFile::areEquivalent(const std::string & tbdPath,
   const std::string & dylibPath) noexcept
 {
-  (void)tbdPath; (void)dylibPath;
+  // Let's see if the linker actually ever calls this in practice.
+  std::cerr << "tinytapi: fatal: Received call to areEquivalent" << std::endl;
+  std::cerr << "  tbd:   " << tbdPath << std::endl;
+  std::cerr << "  dylib: " << dylibPath << std::endl;
+  abort();
+
   // TODO: Load both files and check to see if they have some UUIDs in
   // common or something.
   return false;
