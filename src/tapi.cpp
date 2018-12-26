@@ -21,6 +21,7 @@ struct ExportItem
 
 struct tapi::StubData
 {
+  std::string filename;
   std::vector<Architecture> archs;
   Platform platform;
   std::string installName;
@@ -269,8 +270,9 @@ void LinkerInterfaceFile::init(const StubData & d,
     cpuArch, enforceCpuSubType, d.archs);
   if (selectedArch == Architecture::None)
   {
-    error = "Architecture " + std::string(getArchInfo(cpuArch).name)
-      + " not found in file.";
+    error = "missing required architecture " +
+      std::string(getArchInfo(cpuArch).name) + " in file " +
+      d.filename;
     return;
   }
 
@@ -327,6 +329,7 @@ LinkerInterfaceFile * LinkerInterfaceFile::create(const std::string & path,
     error = "File does not look like YAML; might be a binary.";
     return nullptr;
   }
+  d.filename = path;
 
   if (error.size()) { return nullptr; }
 
