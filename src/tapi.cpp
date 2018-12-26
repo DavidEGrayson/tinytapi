@@ -25,6 +25,7 @@ struct tapi::StubData
   std::vector<Architecture> archs;
   Platform platform;
   std::string installName;
+  PackedVersion32 currentVersion, compatVersion;
   std::vector<ExportItem> exports;
 };
 
@@ -62,6 +63,31 @@ static std::string convertYAMLString(const yaml_node_t * node)
   if (node->type != YAML_SCALAR_NODE) { return ""; }
   return { (const char *)node->data.scalar.value,
     node->data.scalar.length };
+}
+
+static PackedVersion32 convertYAMLVersion(const yaml_node_t * node)
+{
+  std::string str = convertYAMLString(node);
+  unsigned numbers[3] = { 0, 0, 0 };
+  unsigned index = 0;
+  const char * p = str.c_str();
+  while (*p && index <= 2)
+  {
+    if (*p == '.')
+    {
+      index++;
+    }
+    else if (*p >= '0' && *p <= '9')
+    {
+      numbers[index] = numbers[index] * 10 + (*p - '0');
+    }
+    else
+    {
+      // Just ignore invalid digits silently.
+    }
+    p++;
+  }
+  return PackedVersion32(numbers[0], numbers[1], numbers[2]);
 }
 
 static Platform convertYAMLPlatform(const yaml_node_t * node)
@@ -162,6 +188,8 @@ static StubData parseYAML(const uint8_t * data, size_t size,
   std::string & error)
 {
   StubData r;
+  r.currentVersion = { 1, 0, 0 };
+  r.compatVersion = { 1, 0, 0 };
 
   yaml_parser_t parser;
   if (!error.size())
@@ -228,9 +256,15 @@ static StubData parseYAML(const uint8_t * data, size_t size,
       {
         r.exports = convertYAMLExportList(&doc, value_node);
       }
+      else if (key == "current-version")
+      {
+        r.currentVersion = convertYAMLVersion(value_node);
+      }
+      else if (key == "compatibility-version")
+      {
+        r.compatVersion = convertYAMLVersion(value_node);
+      }
       // TODO: objc-constraints
-      // TODO: current-version
-      // TODO: compatibility-version
       // TODO: uuids
     }
   }
@@ -280,6 +314,8 @@ void LinkerInterfaceFile::init(const StubData & d,
 {
   platform = d.platform;
   installName = d.installName;
+  currentVersion = d.currentVersion;
+  compatVersion = d.compatVersion;
 
   Architecture cpuArch = getCpuArch(cpuType, cpuSubType);
   if (cpuArch == Architecture::None)

@@ -27,9 +27,11 @@ class PackedVersion32 {
 public:
   PackedVersion32() = default;
   PackedVersion32(uint32_t v) : version(v) {}
+  PackedVersion32(unsigned major, unsigned minor, unsigned patch) :
+    version((major << 16) | (minor << 8) | patch) {}
   operator unsigned() const noexcept { return version; }
 
-  unsigned int getMajor() const noexcept { return version >> 16 & 0xFF; }
+  unsigned int getMajor() const noexcept { return version >> 16; }
   unsigned int getMinor() const noexcept { return version >> 8 & 0xFF; }
   unsigned int getPatch() const noexcept { return version & 0xFF; }
 
@@ -78,6 +80,7 @@ class LinkerInterfaceFile {
   Platform platform;
   std::string installName;
   std::vector<Symbol> exportList;
+  PackedVersion32 currentVersion, compatVersion;
 
   void init(const StubData &, cpu_type_t, cpu_subtype_t,
     CpuSubTypeMatching, PackedVersion32 minOSVersion,
@@ -108,16 +111,31 @@ public:
   static bool areEquivalent(const std::string & tbdPath,
     const std::string & dylibPath) noexcept;
 
-  const std::string & getInstallName() const noexcept {
+  const std::string & getInstallName() const noexcept
+  {
     return installName;
   }
 
-  bool isInstallNameVersionSpecific() const noexcept {
+  bool isInstallNameVersionSpecific() const noexcept
+  {
     return false;
   }
-  Platform getPlatform() const noexcept { return platform; }
-  PackedVersion32 getCurrentVersion() const noexcept;
-  PackedVersion32 getCompatibilityVersion() const noexcept;
+
+  Platform getPlatform() const noexcept
+  {
+    return platform;
+  }
+
+  PackedVersion32 getCurrentVersion() const noexcept
+  {
+    return currentVersion;
+  }
+
+  PackedVersion32 getCompatibilityVersion() const noexcept
+  {
+    return compatVersion;
+  }
+
   unsigned getSwiftVersion() const noexcept;
   ObjCConstraint getObjCConstraint() const noexcept;
   const std::string & getParentFrameworkName() const noexcept;

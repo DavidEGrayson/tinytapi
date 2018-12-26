@@ -20,6 +20,12 @@ using namespace tapi;
 #define CPU_SUBTYPE_X86_64_ALL CPU_SUBTYPE_I386_ALL
 #define CPU_SUBTYPE_X86_64_H ((cpu_subtype_t)8)
 
+static std::ostream & operator << (std::ostream & os, const PackedVersion32 & v)
+{
+  os << v.getMajor() << '.' << v.getMinor() << '.' << v.getPatch();
+  return os;
+}
+
 static void dumpSymbol(const Symbol & sym)
 {
   std::cout << "  " << sym.getName();
@@ -39,7 +45,7 @@ static void dump(const std::string & filename,
 {
   std::cout << "==== " << filename << " " << arch << std::endl;
 
-  PackedVersion32 minOSVersion(0x1011);  // TODO: is that the correct format?
+  PackedVersion32 minOSVersion(10, 11, 0);
 
   std::ifstream stream(filename);
   if (!stream) {
@@ -96,6 +102,9 @@ static void dump(const std::string & filename,
 
   // Note: would be nice to show the actual name of the platform
   std::cout << "platform: " << (unsigned)file->getPlatform() << std::endl;
+
+  std::cout << "version: " << file->getCurrentVersion() << std::endl;
+  std::cout << "compat-version: " << file->getCompatibilityVersion() << std::endl;
 
   std::cout << "exports: " << std::endl;
   for (const Symbol & sym : file->exports())

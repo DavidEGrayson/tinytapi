@@ -1,0 +1,7 @@
+---
+archs: [ x86_64h ]
+platform: macosx
+install-name: /usr/lib/libversion.dylib
+current-version: 5.6.7
+compatibility-version: 12.13
+...
