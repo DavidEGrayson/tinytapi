@@ -105,6 +105,11 @@ static void dump(const std::string & filename,
 
 static void dumpAsEveryArch(const std::string & filename)
 {
+  std::cout << "==== filename " << std::endl;
+  bool preferText = tapi::LinkerInterfaceFile::shouldPreferTextBasedStubFile(filename);
+  std::cout << "prefer-text: " << preferText << std::endl;
+  std::cout << std::endl;
+
   dump(filename, "x86_64", CPU_TYPE_X86_64, CPU_SUBTYPE_X86_64_ALL);
   dump(filename, "x86_64h", CPU_TYPE_X86_64, CPU_SUBTYPE_X86_64_H);
   dump(filename, "i386", CPU_TYPE_X86_64, CPU_SUBTYPE_I386_ALL);

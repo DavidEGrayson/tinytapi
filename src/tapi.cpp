@@ -254,8 +254,9 @@ bool LinkerInterfaceFile::shouldPreferTextBasedStubFile(
   (void)path;
   // Note: The original library would actually load the file and check
   // "isInstallAPI()".  Not sure how important it is to do all that work so
-  // let's just return true for now.
-  return true;
+  // let's just return false for now to match the observed behavior of
+  // Apple TAPI.
+  return false;
 }
 
 bool LinkerInterfaceFile::areEquivalent(const std::string & tbdPath,
@@ -336,7 +337,9 @@ void LinkerInterfaceFile::init(const StubData & d,
     const Symbol & sym = *it;
     if (sym.name.substr(0, 11) == "$ld$hide$os")
     {
-        it = exportList.erase(it);
+      // TODO: probably should parse the OS version and symbol number and
+      // hide the corresponding symbol if minOSVersion is less.
+      it = exportList.erase(it);
     }
     else
     {
