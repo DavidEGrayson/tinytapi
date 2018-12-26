@@ -112,7 +112,9 @@ public:
     return installName;
   }
 
-  bool isInstallNameVersionSpecific() const noexcept;
+  bool isInstallNameVersionSpecific() const noexcept {
+    return false;
+  }
   Platform getPlatform() const noexcept { return platform; }
   PackedVersion32 getCurrentVersion() const noexcept;
   PackedVersion32 getCompatibilityVersion() const noexcept;
