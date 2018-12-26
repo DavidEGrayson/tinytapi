@@ -62,10 +62,10 @@ enum class CpuSubTypeMatching : unsigned {
 };
 
 class Symbol {
+public:
   std::string name;
   bool weak = false;
   bool threadLocal = false;
-public:
   Symbol(const std::string & name) : name(name) { }
   const std::string & getName() const noexcept { return name; }
   bool isWeakDefined() const noexcept { return weak; }

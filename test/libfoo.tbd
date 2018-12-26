@@ -5,4 +5,5 @@ install-name:    /usr/lib/libfoo.dylib
 exports:
   - archs:       [ i386, x86_64 ]
     symbols:     [ _foo_create, _foo_destroy ]
+    weak-def-symbols: [ _foo_weak ]
 ...

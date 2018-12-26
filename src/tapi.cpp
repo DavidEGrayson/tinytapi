@@ -17,6 +17,7 @@ struct ExportItem
 {
   std::vector<Architecture> archs;
   std::vector<std::string> symbols;
+  std::vector<std::string> weak_symbols;
 };
 
 struct tapi::StubData
@@ -125,6 +126,10 @@ static ExportItem convertYAMLExportItem(
     else if (key == "symbols")
     {
       item.symbols = convertYAMLStringList(doc, value_node);
+    }
+    else if (key == "weak-def-symbols")
+    {
+      item.weak_symbols = convertYAMLStringList(doc, value_node);
     }
   }
   return item;
@@ -292,6 +297,13 @@ void LinkerInterfaceFile::init(const StubData & d,
     for (const std::string & name : item.symbols)
     {
       this->exportList.push_back(Symbol(name));
+    }
+
+    for (const std::string & name : item.weak_symbols)
+    {
+      Symbol sym(name);
+      sym.weak = true;
+      this->exportList.push_back(sym);
     }
   }
 
