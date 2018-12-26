@@ -31,7 +31,12 @@ struct tapi::StubData
 
 unsigned APIVersion::getMajor() noexcept
 {
-  return 2;  // 2.0.0
+  return 1;
+}
+
+std::string Version::getFullVersionAsString() noexcept
+{
+  return "Apple TAPI version 2.0.0";
 }
 
 static bool isWhiteSpace(char c)

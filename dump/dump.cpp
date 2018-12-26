@@ -131,6 +131,8 @@ static void dumpAsEveryArch(const std::string & filename)
 
 int main(int argc, char ** argv)
 {
+  std::cout << "API version: " << APIVersion::getMajor() << std::endl;
+  std::cout << "Full version: " << Version::getFullVersionAsString() << std::endl;
   for (int i = 1; i < argc; i++)
   {
     dumpAsEveryArch(argv[i]);

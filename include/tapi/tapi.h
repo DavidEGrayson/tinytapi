@@ -19,7 +19,7 @@ public:
 
 class Version {
 public:
-  static std::string getFullVersionAsString();
+  static std::string getFullVersionAsString() noexcept;
 };
 
 class PackedVersion32 {
