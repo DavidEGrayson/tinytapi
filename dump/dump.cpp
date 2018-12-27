@@ -106,6 +106,10 @@ static void dump(const std::string & filename,
   std::cout << "version: " << file->getCurrentVersion() << std::endl;
   std::cout << "compat-version: " << file->getCompatibilityVersion() << std::endl;
   std::cout << "swift-version: " << file->getSwiftVersion() << std::endl;
+  std::cout << "parent-framework-name: "
+    << file->getParentFrameworkName() << std::endl;
+  std::cout << "application-extension-safe: "
+    << file->isApplicationExtensionSafe() << std::endl;
 
   std::cout << "exports: " << std::endl;
   for (const Symbol & sym : file->exports())

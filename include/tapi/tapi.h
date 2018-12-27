@@ -81,8 +81,8 @@ class LinkerInterfaceFile {
   std::string installName;
   std::vector<Symbol> exportList;
   PackedVersion32 currentVersion, compatVersion;
-  ObjCConstraint objcConstraint = ObjCConstraint::None;
   unsigned swiftVersion = 0;
+  bool applicationExtensionSafe = true;
 
   void init(const StubData &, cpu_type_t, cpu_subtype_t,
     CpuSubTypeMatching, PackedVersion32 minOSVersion,
@@ -136,11 +136,20 @@ public:
 
   ObjCConstraint getObjCConstraint() const noexcept
   {
-    return objcConstraint;
+    return ObjCConstraint::None;
   }
 
-  const std::string & getParentFrameworkName() const noexcept;
-  bool isApplicationExtensionSafe() const noexcept;
+  const std::string & getParentFrameworkName() const noexcept
+  {
+    static std::string empty;
+    return empty;
+  }
+
+  bool isApplicationExtensionSafe() const noexcept
+  {
+    return applicationExtensionSafe;
+  }
+
   bool hasTwoLevelNamespace() const noexcept;
 
   bool hasAllowableClients() const noexcept;

@@ -28,6 +28,7 @@ struct tapi::StubData
   std::string installName;
   PackedVersion32 currentVersion, compatVersion;
   unsigned swiftVersion = 0;
+  bool applicationExtensionSafe = true;
   std::vector<ExportItem> exports;
 };
 
@@ -186,6 +187,19 @@ static std::vector<Architecture> convertYAMLArchList(
   return list;
 }
 
+static void parseYAMLFlagList(yaml_document_t * doc,
+  yaml_node_t * node, StubData & out)
+{
+  for (const std::string & name : convertYAMLStringList(doc, node))
+  {
+    if (name == "not_app_extension_safe")
+    {
+      out.applicationExtensionSafe = false;
+    }
+  }
+}
+
+
 static ExportItem convertYAMLExportItem(
   yaml_document_t * doc, yaml_node_t * node)
 {
@@ -335,6 +349,10 @@ static StubData parseYAML(const uint8_t * data, size_t size,
           break;
         }
       }
+      else if (key == "flags")
+      {
+        parseYAMLFlagList(&doc, value_node, r);
+      }
       // TODO: uuids
     }
   }
@@ -387,6 +405,7 @@ void LinkerInterfaceFile::init(const StubData & d,
   currentVersion = d.currentVersion;
   compatVersion = d.compatVersion;
   swiftVersion = d.swiftVersion;
+  applicationExtensionSafe = d.applicationExtensionSafe;
 
   Architecture cpuArch = getCpuArch(cpuType, cpuSubType);
   if (cpuArch == Architecture::None)

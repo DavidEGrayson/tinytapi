@@ -2,6 +2,7 @@
 archs:           [ i386, x86_64 ]
 platform:        macosx
 install-name:    /usr/lib/libfoo.dylib
+flags:           [ not_app_extension_safe ]
 exports:
   - archs:       [ i386, x86_64 ]
     symbols:     [ _foo_create, _foo_destroy, _foo_newfangled,
