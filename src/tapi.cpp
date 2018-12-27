@@ -6,6 +6,7 @@
 
 // Standard external libraries
 #include <string.h>
+#include <set>
 #include <iostream>  // TODO: remove
 
 // Components of this compilation unit
@@ -70,12 +71,11 @@ static std::string convertYAMLString(const yaml_node_t * node)
     node->data.scalar.length };
 }
 
-static PackedVersion32 convertYAMLVersion(const yaml_node_t * node)
+static PackedVersion32 parseVersion(const char * str)
 {
-  std::string str = convertYAMLString(node);
+  const char * p = str;
   unsigned numbers[3] = { 0, 0, 0 };
   unsigned index = 0;
-  const char * p = str.c_str();
   while (*p && index <= 2)
   {
     if (*p == '.')
@@ -88,11 +88,43 @@ static PackedVersion32 convertYAMLVersion(const yaml_node_t * node)
     }
     else
     {
-      // Just ignore invalid digits silently.
+      // Invalid digit, possibly a separator character.
+      break;
     }
     p++;
   }
   return PackedVersion32(numbers[0], numbers[1], numbers[2]);
+}
+
+static PackedVersion32 parseVersion(const std::string & str)
+{
+  return parseVersion(str.c_str());
+}
+
+static bool parseHideCommand(const std::string & name,
+  PackedVersion32 & osVersion, std::string & hiddenName)
+{
+  const char * p = name.c_str();
+  if (strncmp(p, "$ld$hide$os", 11)) { return false; }
+  p += 11;
+  osVersion = parseVersion(p);
+
+  // Find the '$' after the version number.
+  while (true)
+  {
+    if (*p == '$') { break; }
+    if (!*p) { return false; }
+    p++;
+  }
+  p++;  // Advance past the '$'
+
+  hiddenName = p;
+  return true;
+}
+
+static PackedVersion32 convertYAMLVersion(const yaml_node_t * node)
+{
+  return parseVersion(convertYAMLString(node));
 }
 
 static Platform convertYAMLPlatform(const yaml_node_t * node)
@@ -377,14 +409,27 @@ void LinkerInterfaceFile::init(const StubData & d,
     }
   }
 
+  std::set<std::string> hideSet;
+
+  for (const Symbol & sym : exportList)
+  {
+    PackedVersion32 osVersion;
+    std::string hiddenName;
+    if (parseHideCommand(sym.name, osVersion, hiddenName) &&
+      osVersion >= minOSVersion)
+    {
+      hideSet.insert(hiddenName);
+    }
+  }
+
   auto it = exportList.begin();
   while (it != exportList.end())
   {
     const Symbol & sym = *it;
-    if (sym.name.substr(0, 11) == "$ld$hide$os")
+
+    if (sym.name.substr(0, 9) == "$ld$hide$" ||
+      hideSet.count(sym.name))
     {
-      // TODO: probably should parse the OS version and symbol number and
-      // hide the corresponding symbol if minOSVersion is less.
       it = exportList.erase(it);
     }
     else

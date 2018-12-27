@@ -4,8 +4,8 @@ platform:        macosx
 install-name:    /usr/lib/libfoo.dylib
 exports:
   - archs:       [ i386, x86_64 ]
-    symbols:     [ _foo_create, _foo_destroy,
-      '$ld$hide$os10.10$_OBJC_CLASS_$_NSURLSessionStreamTask' ]
+    symbols:     [ _foo_create, _foo_destroy, _foo_newfangled,
+      '$ld$hide$os10.12$_foo_newfangled' ]
     weak-def-symbols: [ _foo_weak ]
     objc-classes: [ Foo ]
     objc-ivars: [ Foo.bar, Foo.car ]
