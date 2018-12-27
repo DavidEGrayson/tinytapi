@@ -23,7 +23,7 @@ public:
 };
 
 class PackedVersion32 {
-  uint32_t version;
+  uint32_t version = 0;
 public:
   PackedVersion32() = default;
   PackedVersion32(uint32_t v) : version(v) {}
@@ -77,25 +77,18 @@ public:
 class LinkerInterfaceFile {
   LinkerInterfaceFile() = default;
 
-  Platform platform;
+  Platform platform = Platform::Unknown;
   std::string installName;
   std::vector<Symbol> exportList;
   PackedVersion32 currentVersion, compatVersion;
+  ObjCConstraint objcConstraint = ObjCConstraint::None;
+  unsigned swiftVersion = 0;
 
   void init(const StubData &, cpu_type_t, cpu_subtype_t,
     CpuSubTypeMatching, PackedVersion32 minOSVersion,
     std::string & errorMessage);
 
 public:
-  /** Let's hope we don't need any of these:
-  LinkerInterfaceFile(const LinkerInterfaceFile &) noexcept = delete;
-  LinkerInterfaceFile & operator=(const LinkerInterfaceFile &) noexcept = delete;
-
-  LinkerInterfaceFile(LinkerInterfaceFile &&) noexcept;
-  LinkerInterfaceFile & operator=(LinkerInterfaceFile &&) noexcept;
-
-  ~LinkerInterfaceFile() noexcept;
-  **/
 
   static LinkerInterfaceFile * create(const std::string & path,
     const uint8_t * data, size_t size, cpu_type_t, cpu_subtype_t,
@@ -136,8 +129,16 @@ public:
     return compatVersion;
   }
 
-  unsigned getSwiftVersion() const noexcept;
-  ObjCConstraint getObjCConstraint() const noexcept;
+  unsigned getSwiftVersion() const noexcept
+  {
+    return swiftVersion;
+  }
+
+  ObjCConstraint getObjCConstraint() const noexcept
+  {
+    return objcConstraint;
+  }
+
   const std::string & getParentFrameworkName() const noexcept;
   bool isApplicationExtensionSafe() const noexcept;
   bool hasTwoLevelNamespace() const noexcept;

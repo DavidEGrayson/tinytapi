@@ -24,9 +24,10 @@ struct tapi::StubData
 {
   std::string filename;
   std::vector<Architecture> archs;
-  Platform platform;
+  Platform platform = Platform::Unknown;
   std::string installName;
   PackedVersion32 currentVersion, compatVersion;
+  unsigned swiftVersion = 0;
   std::vector<ExportItem> exports;
 };
 
@@ -69,6 +70,26 @@ static std::string convertYAMLString(const yaml_node_t * node)
   if (node->type != YAML_SCALAR_NODE) { return ""; }
   return { (const char *)node->data.scalar.value,
     node->data.scalar.length };
+}
+
+static unsigned convertYAMLUnsignedInt(const yaml_node_t * node)
+{
+  std::string str = convertYAMLString(node);
+  const char * p = str.c_str();
+  unsigned r = 0;
+  while (*p)
+  {
+    if (*p >= '0' && *p <= '9')
+    {
+      r = r * 10 + (*p - '0');
+    }
+    else
+    {
+      break;
+    }
+    p++;
+  }
+  return r;
 }
 
 static PackedVersion32 parseVersion(const char * str)
@@ -301,7 +322,19 @@ static StubData parseYAML(const uint8_t * data, size_t size,
       {
         r.compatVersion = convertYAMLVersion(value_node);
       }
-      // TODO: objc-constraints
+      else if (key == "swift-version")
+      {
+        r.swiftVersion = convertYAMLUnsignedInt(value_node);
+      }
+      else if (key == "objc-constraint")
+      {
+        std::string constraint = convertYAMLString(value_node);
+        if (constraint != "none")
+        {
+          error = "Unrecognized objc-constraint: " + constraint + ".";
+          break;
+        }
+      }
       // TODO: uuids
     }
   }
@@ -353,6 +386,7 @@ void LinkerInterfaceFile::init(const StubData & d,
   installName = d.installName;
   currentVersion = d.currentVersion;
   compatVersion = d.compatVersion;
+  swiftVersion = d.swiftVersion;
 
   Architecture cpuArch = getCpuArch(cpuType, cpuSubType);
   if (cpuArch == Architecture::None)
