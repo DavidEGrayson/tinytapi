@@ -29,6 +29,7 @@ struct tapi::StubData
   PackedVersion32 currentVersion, compatVersion;
   unsigned swiftVersion = 0;
   bool applicationExtensionSafe = true;
+  bool twoLevelNamespace = true;
   std::vector<ExportItem> exports;
 };
 
@@ -195,6 +196,10 @@ static void parseYAMLFlagList(yaml_document_t * doc,
     if (name == "not_app_extension_safe")
     {
       out.applicationExtensionSafe = false;
+    }
+    else if (name == "flat_namespace")
+    {
+      out.twoLevelNamespace = false;
     }
   }
 }
@@ -406,6 +411,7 @@ void LinkerInterfaceFile::init(const StubData & d,
   compatVersion = d.compatVersion;
   swiftVersion = d.swiftVersion;
   applicationExtensionSafe = d.applicationExtensionSafe;
+  twoLevelNamespace = d.twoLevelNamespace;
 
   Architecture cpuArch = getCpuArch(cpuType, cpuSubType);
   if (cpuArch == Architecture::None)

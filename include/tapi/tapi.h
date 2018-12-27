@@ -83,6 +83,7 @@ class LinkerInterfaceFile {
   PackedVersion32 currentVersion, compatVersion;
   unsigned swiftVersion = 0;
   bool applicationExtensionSafe = true;
+  bool twoLevelNamespace = true;
 
   void init(const StubData &, cpu_type_t, cpu_subtype_t,
     CpuSubTypeMatching, PackedVersion32 minOSVersion,
@@ -150,7 +151,10 @@ public:
     return applicationExtensionSafe;
   }
 
-  bool hasTwoLevelNamespace() const noexcept;
+  bool hasTwoLevelNamespace() const noexcept
+  {
+    return twoLevelNamespace;
+  }
 
   bool hasAllowableClients() const noexcept;
   const std::vector<std::string> & allowableClients() const noexcept;

@@ -110,6 +110,8 @@ static void dump(const std::string & filename,
     << file->getParentFrameworkName() << std::endl;
   std::cout << "application-extension-safe: "
     << file->isApplicationExtensionSafe() << std::endl;
+  std::cout << "has-two-level-namespace: "
+    << file->hasTwoLevelNamespace() << std::endl;
 
   std::cout << "exports: " << std::endl;
   for (const Symbol & sym : file->exports())
