@@ -204,7 +204,6 @@ static void parseYAMLFlagList(yaml_document_t * doc,
   }
 }
 
-
 static ExportItem convertYAMLExportItem(
   yaml_document_t * doc, yaml_node_t * node)
 {

@@ -113,6 +113,16 @@ static void dump(const std::string & filename,
   std::cout << "has-two-level-namespace: "
     << file->hasTwoLevelNamespace() << std::endl;
 
+  std::cout << "allowable-clients:" << std::endl;
+  for (const std::string & clients : file->allowableClients())
+  {
+    std::cout << "  " << clients << std::endl;
+  }
+  if (!!file->allowableClients().size() != file->hasAllowableClients())
+  {
+    std::cout << "hasAllowableClients is wrong!" << std::endl;
+  }
+
   std::cout << "exports: " << std::endl;
   for (const Symbol & sym : file->exports())
   {

@@ -142,7 +142,7 @@ public:
 
   const std::string & getParentFrameworkName() const noexcept
   {
-    static std::string empty;
+    static const std::string empty;
     return empty;
   }
 
@@ -156,8 +156,16 @@ public:
     return twoLevelNamespace;
   }
 
-  bool hasAllowableClients() const noexcept;
-  const std::vector<std::string> & allowableClients() const noexcept;
+  bool hasAllowableClients() const noexcept
+  {
+    return allowableClients().size();
+  }
+
+  const std::vector<std::string> & allowableClients() const noexcept
+  {
+    static const std::vector<std::string> clients;
+    return clients;
+  }
 
   bool hasReexportedLibraries() const noexcept;
   const std::vector<std::string> & reexportedLibraries() const noexcept;
