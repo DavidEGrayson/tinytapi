@@ -494,9 +494,13 @@ void LinkerInterfaceFile::init(const StubData & d,
   {
     const Symbol & sym = *it;
 
-    if (sym.name.substr(0, 9) == "$ld$hide$" ||
-      hideSet.count(sym.name))
+    if (sym.name.substr(0, 9) == "$ld$hide$")
     {
+      it = exportList.erase(it);
+    }
+    else if (hideSet.count(sym.name))
+    {
+      ignoreList.push_back(sym.name);
       it = exportList.erase(it);
     }
     else

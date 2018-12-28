@@ -10,4 +10,5 @@ exports:
     weak-def-symbols: [ _foo_weak ]
     objc-classes: [ Foo ]
     objc-ivars: [ Foo.bar, Foo.car ]
+    re-exports: [ /usr/lib/libdar.dylib ]
 ...

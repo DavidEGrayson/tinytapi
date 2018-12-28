@@ -84,7 +84,7 @@ class LinkerInterfaceFile {
   unsigned swiftVersion = 0;
   bool applicationExtensionSafe = true;
   bool twoLevelNamespace = true;
-  std::vector<std::string> reexports;
+  std::vector<std::string> reexports, ignoreList;
 
   void init(const StubData &, cpu_type_t, cpu_subtype_t,
     CpuSubTypeMatching, PackedVersion32 minOSVersion,
@@ -164,8 +164,8 @@ public:
 
   const std::vector<std::string> & allowableClients() const noexcept
   {
-    static const std::vector<std::string> clients;
-    return clients;
+    static const std::vector<std::string> empty;
+    return empty;
   }
 
   bool hasReexportedLibraries() const noexcept
@@ -178,9 +178,19 @@ public:
     return reexports;
   }
 
-  bool hasWeakDefinedExports() const noexcept;
+  bool hasWeakDefinedExports() const noexcept
+  {
+    for (const Symbol & sym : exports())
+    {
+      if (sym.isWeakDefined()) { return true; }
+    }
+    return false;
+  }
 
-  const std::vector<std::string> & ignoreExports() const noexcept;
+  const std::vector<std::string> & ignoreExports() const noexcept
+  {
+    return ignoreList;
+  }
 
   const std::vector<Symbol> & exports() const noexcept { return exportList; }
 

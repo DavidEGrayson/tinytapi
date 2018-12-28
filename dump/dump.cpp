@@ -112,6 +112,8 @@ static void dump(const std::string & filename,
     << file->isApplicationExtensionSafe() << std::endl;
   std::cout << "has-two-level-namespace: "
     << file->hasTwoLevelNamespace() << std::endl;
+  std::cout << "has-weak: "
+    << file->hasWeakDefinedExports() << std::endl;
 
   std::cout << "allowable-clients:" << std::endl;
   for (const std::string & clients : file->allowableClients())
@@ -137,6 +139,12 @@ static void dump(const std::string & filename,
   for (const Symbol & sym : file->exports())
   {
     dumpSymbol(sym);
+  }
+
+  std::cout << "ignore-exports: " << std::endl;
+  for (const std::string & x : file->ignoreExports())
+  {
+    std::cout << "  " << x << std::endl;
   }
 
   std::cout << std::endl;
