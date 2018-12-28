@@ -167,7 +167,7 @@ static void dumpAsEveryArch(const std::string & filename)
 
   dump(filename, "x86_64", CPU_TYPE_X86_64, CPU_SUBTYPE_X86_64_ALL);
   dump(filename, "x86_64h", CPU_TYPE_X86_64, CPU_SUBTYPE_X86_64_H);
-  dump(filename, "i386", CPU_TYPE_X86_64, CPU_SUBTYPE_I386_ALL);
+  dump(filename, "i386", CPU_TYPE_I386, CPU_SUBTYPE_I386_ALL);
 }
 
 int main(int argc, char ** argv)

@@ -22,7 +22,7 @@ struct ExportItem
 
   bool hasArch(Architecture arch) const noexcept
   {
-    for (const Architecture & a : archs)
+    for (Architecture a : archs)
     {
       if (a == arch) { return true; }
     }

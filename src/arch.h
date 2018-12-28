@@ -33,7 +33,7 @@ static const ArchInfo archInfoArray[] = {
   { "none", 0, 0 },
   { "x86_64", CPU_TYPE_X86_64, CPU_SUBTYPE_X86_64_ALL },
   { "x86_64h", CPU_TYPE_X86_64, CPU_SUBTYPE_X86_64_H },
-  { "i386", CPU_TYPE_X86_64, CPU_SUBTYPE_I386_ALL },
+  { "i386", CPU_TYPE_I386, CPU_SUBTYPE_I386_ALL },
 };
 
 static const size_t archCount =

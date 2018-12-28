@@ -11,4 +11,7 @@ exports:
     objc-classes: [ Foo ]
     objc-ivars: [ Foo.bar, Foo.car ]
     re-exports: [ /usr/lib/libdar.dylib ]
+undefineds:
+  - archs:      [ i386 ]
+    symbols:    [ undefined_32bit ]
 ...
