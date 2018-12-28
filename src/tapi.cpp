@@ -19,6 +19,15 @@ struct ExportItem
   std::vector<Architecture> archs;
   std::vector<std::string> symbols, weak_symbols,
     objc_classes, objc_ivars, reexports;
+
+  bool hasArch(Architecture arch) const noexcept
+  {
+    for (const Architecture & a : archs)
+    {
+      if (a == arch) { return true; }
+    }
+    return false;
+  }
 };
 
 struct tapi::StubData
@@ -31,7 +40,7 @@ struct tapi::StubData
   unsigned swiftVersion = 0;
   bool applicationExtensionSafe = true;
   bool twoLevelNamespace = true;
-  std::vector<ExportItem> exports;
+  std::vector<ExportItem> exports, undefineds;
 };
 
 unsigned APIVersion::getMajor() noexcept
@@ -336,6 +345,10 @@ static StubData parseYAML(const uint8_t * data, size_t size,
       {
         r.exports = convertYAMLExportList(&doc, value_node);
       }
+      else if (key == "undefineds")
+      {
+        r.undefineds = convertYAMLExportList(&doc, value_node);
+      }
       else if (key == "current-version")
       {
         r.currentVersion = convertYAMLVersion(value_node);
@@ -436,16 +449,7 @@ void LinkerInterfaceFile::init(const StubData & d,
 
   for (const ExportItem & item : d.exports)
   {
-    bool hasSelectedArch = false;
-    for (const Architecture & arch : item.archs)
-    {
-      if (arch == selectedArch)
-      {
-        hasSelectedArch = true;
-        break;
-      }
-    }
-    if (!hasSelectedArch) { continue; }
+    if (!item.hasArch(selectedArch)) { continue; }
 
     for (const std::string & name : item.symbols)
     {
@@ -473,6 +477,37 @@ void LinkerInterfaceFile::init(const StubData & d,
     for (const std::string & lib : item.reexports)
     {
       reexports.push_back(lib);
+    }
+  }
+
+  for (const ExportItem & item : d.undefineds)
+  {
+    if (!item.hasArch(selectedArch)) { continue; }
+
+    // NOTE: A lot of the code in this loop is duplicated from the
+    // loop above for d.exports.
+
+    for (const std::string & name : item.symbols)
+    {
+      undefinedList.push_back(name);
+    }
+
+    for (const std::string & name : item.weak_symbols)
+    {
+      Symbol sym(name);
+      sym.weak = true;
+      undefinedList.push_back(sym);
+    }
+
+    for (const std::string & name : item.objc_classes)
+    {
+      undefinedList.push_back("_OBJC_CLASS_$_" + name);
+      undefinedList.push_back("_OBJC_METACLASS_$_" + name);
+    }
+
+    for (const std::string & name : item.objc_ivars)
+    {
+      undefinedList.push_back("_OBJC_IVAR_$_" + name);
     }
   }
 

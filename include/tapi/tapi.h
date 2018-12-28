@@ -79,7 +79,7 @@ class LinkerInterfaceFile {
 
   Platform platform = Platform::Unknown;
   std::string installName;
-  std::vector<Symbol> exportList;
+  std::vector<Symbol> exportList, undefinedList;
   PackedVersion32 currentVersion, compatVersion;
   unsigned swiftVersion = 0;
   bool applicationExtensionSafe = true;
@@ -192,9 +192,15 @@ public:
     return ignoreList;
   }
 
-  const std::vector<Symbol> & exports() const noexcept { return exportList; }
+  const std::vector<Symbol> & exports() const noexcept
+  {
+    return exportList;
+  }
 
-  const std::vector<Symbol> & undefineds() const noexcept;
+  const std::vector<Symbol> & undefineds() const noexcept
+  {
+    return undefinedList;
+  }
 };
 
 }  // end namespace tapi

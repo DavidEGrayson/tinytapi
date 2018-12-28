@@ -147,6 +147,12 @@ static void dump(const std::string & filename,
     std::cout << "  " << x << std::endl;
   }
 
+  std::cout << "undefineds: " << std::endl;
+  for (const Symbol & sym : file->undefineds())
+  {
+    dumpSymbol(sym);
+  }
+
   std::cout << std::endl;
 
   delete file;
