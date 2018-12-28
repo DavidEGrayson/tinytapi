@@ -1,6 +1,6 @@
 source $setup
 
-CFLAGS="-g -O2 -std=c++14 -Wall -Wextra -Wno-missing-field-initializers"
+CFLAGS="-g -O2 -std=c++14 -Wall -Wextra"
 CFLAGS="$CFLAGS -I$include_dir"
 g++ -c $CFLAGS $src_dir/tapi.cpp $(pkg-config --cflags yaml-0.1) -o tapi.o
 ar cr libtapi.a tapi.o
