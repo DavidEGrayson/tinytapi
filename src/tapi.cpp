@@ -17,7 +17,8 @@ using namespace tapi;
 struct ExportItem
 {
   std::vector<Architecture> archs;
-  std::vector<std::string> symbols, weak_symbols, objc_classes, objc_ivars;
+  std::vector<std::string> symbols, weak_symbols,
+    objc_classes, objc_ivars, reexports;
 };
 
 struct tapi::StubData
@@ -240,7 +241,10 @@ static ExportItem convertYAMLExportItem(
     {
       item.objc_ivars = convertYAMLStringList(doc, value_node);
     }
-    // TODO: re-exports
+    else if (key == "re-exports")
+    {
+      item.reexports = convertYAMLStringList(doc, value_node);
+    }
   }
   return item;
 }
@@ -464,6 +468,11 @@ void LinkerInterfaceFile::init(const StubData & d,
     for (const std::string & name : item.objc_ivars)
     {
       exportList.push_back("_OBJC_IVAR_$_" + name);
+    }
+
+    for (const std::string & lib : item.reexports)
+    {
+      reexports.push_back(lib);
     }
   }
 

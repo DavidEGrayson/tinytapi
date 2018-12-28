@@ -123,6 +123,16 @@ static void dump(const std::string & filename,
     std::cout << "hasAllowableClients is wrong!" << std::endl;
   }
 
+  std::cout << "reexported-libraries:" << std::endl;
+  for (const std::string & lib : file->reexportedLibraries())
+  {
+    std::cout << "  " << lib << std::endl;
+  }
+  if (!!file->reexportedLibraries().size() != file->hasReexportedLibraries())
+  {
+    std::cout << "hasReexportedLibraries is wrong!" << std::endl;
+  }
+
   std::cout << "exports: " << std::endl;
   for (const Symbol & sym : file->exports())
   {

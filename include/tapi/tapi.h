@@ -84,6 +84,7 @@ class LinkerInterfaceFile {
   unsigned swiftVersion = 0;
   bool applicationExtensionSafe = true;
   bool twoLevelNamespace = true;
+  std::vector<std::string> reexports;
 
   void init(const StubData &, cpu_type_t, cpu_subtype_t,
     CpuSubTypeMatching, PackedVersion32 minOSVersion,
@@ -167,8 +168,15 @@ public:
     return clients;
   }
 
-  bool hasReexportedLibraries() const noexcept;
-  const std::vector<std::string> & reexportedLibraries() const noexcept;
+  bool hasReexportedLibraries() const noexcept
+  {
+    return reexportedLibraries().size();
+  }
+
+  const std::vector<std::string> & reexportedLibraries() const noexcept
+  {
+    return reexports;
+  }
 
   bool hasWeakDefinedExports() const noexcept;
 
