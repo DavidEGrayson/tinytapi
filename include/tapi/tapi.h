@@ -4,6 +4,10 @@
 #include <vector>
 #include <string>
 
+#define TAPI_API_VERSION_MAJOR 1U
+#define TAPI_API_VERSION_MINOR 2U
+#define TAPI_API_VERSION_PATCH 0U
+
 using cpu_type_t = int;
 using cpu_subtype_t = int;
 
