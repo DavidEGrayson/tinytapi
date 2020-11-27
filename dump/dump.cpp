@@ -174,6 +174,7 @@ int main(int argc, char ** argv)
 {
   std::cout << "API version: " << APIVersion::getMajor() << std::endl;
   std::cout << "Full version: " << Version::getFullVersionAsString() << std::endl;
+  std::cout << "Version: " << Version::getAsString() << std::endl;
   std::cout << std::endl;
   for (int i = 1; i < argc; i++)
   {

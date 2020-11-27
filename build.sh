@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 set -ue
 CC="clang++ -g -O1 -std=c++14 -Iinclude"

@@ -53,6 +53,11 @@ std::string Version::getFullVersionAsString() noexcept
   return "Apple TAPI version 2.0.0";
 }
 
+std::string Version::getAsString() noexcept
+{
+  return "2.0.0";
+}
+
 static bool isWhiteSpace(char c)
 {
   return c == '\r' || c == '\n' || c == ' ' || c == '\t';
